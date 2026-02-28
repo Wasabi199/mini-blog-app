@@ -11,11 +11,6 @@ class UploadedFile extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'file_name',
         'file_path',
@@ -26,7 +21,23 @@ class UploadedFile extends Model
     ];
 
     /**
-     * Get the parent uploadable model (User or Post).
+     * ---------------------------------------------------------------------------------------------------------------
+     * BOOT
+     * ---------------------------------------------------------------------------------------------------------------
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($uploadedFile) {
+            $uploadedFile->deleteFile();
+        });
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------------------------------------
+     * RELATIOSHIPS
+     * ---------------------------------------------------------------------------------------------------------------
      */
     public function uploadable(): MorphTo
     {
@@ -34,32 +45,25 @@ class UploadedFile extends Model
     }
 
     /**
-     * Get the full URL of the uploaded file.
+     * ---------------------------------------------------------------------------------------------------------------
+     * METHODS
+     * ---------------------------------------------------------------------------------------------------------------
      */
     public function getUrlAttribute(): string
     {
         return Storage::disk($this->disk)->url($this->file_path);
     }
 
-    /**
-     * Get the full path of the uploaded file.
-     */
     public function getFullPathAttribute(): string
     {
         return Storage::disk($this->disk)->path($this->file_path);
     }
 
-    /**
-     * Check if the file exists in storage.
-     */
     public function exists(): bool
     {
         return Storage::disk($this->disk)->exists($this->file_path);
     }
 
-    /**
-     * Delete the file from storage.
-     */
     public function deleteFile(): bool
     {
         if ($this->exists()) {
@@ -67,18 +71,5 @@ class UploadedFile extends Model
         }
 
         return false;
-    }
-
-    /**
-     * Boot the model.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Automatically delete the file from storage when the model is deleted
-        static::deleting(function ($uploadedFile) {
-            $uploadedFile->deleteFile();
-        });
     }
 }

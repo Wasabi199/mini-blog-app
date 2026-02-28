@@ -13,14 +13,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -65,32 +59,30 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the user's posts
+     * ---------------------------------------------------------------------------------------------------------------
+     * RELATIONSHIPS
+     * ---------------------------------------------------------------------------------------------------------------
      */
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
     }
 
-    /**
-     * Get all of the user's uploaded files.
-     */
     public function uploadedFiles(): MorphMany
     {
         return $this->morphMany(UploadedFile::class, 'uploadable');
     }
 
     /**
-     * Get the user's profile picture.
+     * ---------------------------------------------------------------------------------------------------------------
+     * METHODS
+     * ---------------------------------------------------------------------------------------------------------------
      */
     public function profilePicture()
     {
         return $this->uploadedFiles()->where('file_type', 'profile_picture')->latest()->first();
     }
 
-    /**
-     * Get the profile picture URL or return a default.
-     */
     public function getProfilePictureUrlAttribute(): string
     {
         $profilePicture = $this->profilePicture();
@@ -103,21 +95,15 @@ class User extends Authenticatable
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=7F9CF5&background=EBF4FF';
     }
 
-    /**
-     * Upload a new profile picture.
-     */
     public function uploadProfilePicture($file): UploadedFile
     {
-        // Delete old profile picture if exists
         $oldProfilePicture = $this->profilePicture();
         if ($oldProfilePicture) {
             $oldProfilePicture->delete();
         }
 
-        // Store the new file
         $path = $file->store('uploads/users/profiles', 'public');
 
-        // Create the uploaded file record
         return $this->uploadedFiles()->create([
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
