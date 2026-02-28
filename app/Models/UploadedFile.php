@@ -65,7 +65,7 @@ class UploadedFile extends Model
         if ($this->exists()) {
             return Storage::disk($this->disk)->delete($this->file_path);
         }
-        
+
         return false;
     }
 

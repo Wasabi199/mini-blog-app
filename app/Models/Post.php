@@ -71,8 +71,8 @@ class Post extends Model
 
     public function isPublished(): bool
     {
-        return $this->status === PostStatus::PUBLISHED 
-            && $this->published_at !== null 
+        return $this->status === PostStatus::PUBLISHED
+            && $this->published_at !== null
             && $this->published_at->isPast();
     }
 
@@ -103,11 +103,11 @@ class Post extends Model
     public function getThumbnailUrlAttribute(): ?string
     {
         $thumbnail = $this->thumbnail();
-        
+
         if ($thumbnail && $thumbnail->exists()) {
             return $thumbnail->url;
         }
-        
+
         // Return null or a default placeholder image
         return null;
     }
